@@ -1,0 +1,27 @@
+spring:
+  sql:
+    init:
+      # mode: always   # 항상 data.sql 실행 # 위험한 옵션!! 개발 DB가 모두 날라갈수 있음으로 주의!
+      # schema-locations: classpath:schema.sql
+      # data-locations: classpath:data.sql
+  config:
+    activate:
+      on-profile: dev
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+        physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+        jdbc.time_zone: UTC
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.type.descriptor.sql: trace

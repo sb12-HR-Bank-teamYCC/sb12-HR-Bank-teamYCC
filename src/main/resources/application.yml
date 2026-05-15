@@ -1,0 +1,53 @@
+﻿spring:
+  application:
+    name: br_bank
+  profiles:
+    active: dev   # dev, prod 선택 가능
+
+  servlet:
+    multipart:
+      maxFileSize: 100MB
+      maxRequestSize: 300MB
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    driver-class-name: org.postgresql.Driver
+    username: user1
+    password: 1234
+
+  mvc:
+    log-request-details: true
+
+# Swagger
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    display-request-duration: true
+    persist-authorization: true
+
+# Logging
+logging:
+  level:
+    # Hibernate SQL
+    org.hibernate.SQL: off
+    org.hibernate.orm.jdbc.bind: off
+    org.hibernate.type.descriptor.sql: off
+
+    # Spring Web
+    org.springframework.web: info
+    org.springframework.web.filter.CommonsRequestLoggingFilter: debug
+
+  pattern:
+    console: "%d{HH:mm:ss} %-5level %logger{36} - %msg%n"
+
+myblog:
+  storage:
+    type: local
+
+    local:
+      root-path: .discodeit/storage
