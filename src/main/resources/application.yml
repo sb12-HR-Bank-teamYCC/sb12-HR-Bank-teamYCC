@@ -1,10 +1,10 @@
-﻿spring:
+﻿﻿spring:
   application:
     name: hr_bank
 
-# Railway에서 쓸 환경변수
+  # Railway에서 쓸 환경변수
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev} 
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
   servlet:
     multipart:
@@ -44,3 +44,8 @@ hr-bank:
     type: local
     local:
       root-path: /data/storage
+
+# backup
+backup:
+  batch:
+    fixed-rate: 3600000

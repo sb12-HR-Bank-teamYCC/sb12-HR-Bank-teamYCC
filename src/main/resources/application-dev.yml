@@ -1,21 +1,15 @@
 spring:
   sql:
     init:
-      # mode: always
-      # schema-locations: classpath:schema.sql
-      # data-locations: classpath:data.sql
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
 
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
     driver-class-name: org.postgresql.Driver
     username: user1
     password: 1234
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/hr_management
-    driver-class-name: org.postgresql.Driver
-    username: hr_user
-    password: hr_password
 
   jpa:
     hibernate:
