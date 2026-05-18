@@ -44,3 +44,8 @@ hr-bank:
     type: local
     local:
       root-path: /data/storage
+
+# backup
+backup:
+  batch:
+    fixed-rate: 3600000
