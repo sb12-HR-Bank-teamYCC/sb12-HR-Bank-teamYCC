@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS data_backups CASCADE;
 DROP TABLE IF EXISTS employee_change_logs CASCADE;
 DROP TABLE IF EXISTS employee_change_log_diffs CASCADE;
 
+
 -- files 테이블 생성
 CREATE TABLE files (
     id UUID PRIMARY KEY,
