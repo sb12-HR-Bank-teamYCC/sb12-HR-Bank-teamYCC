@@ -7,10 +7,10 @@ spring:
       on-profile: prod
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: ${DB_URL}
     driver-class-name: org.postgresql.Driver
-    username: user1
-    password: 1234
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:

@@ -1,6 +1,7 @@
 ﻿spring:
   application:
     name: br_bank
+
   profiles:
     active: dev   # dev, prod 선택 가능
 
@@ -8,12 +9,6 @@
     multipart:
       maxFileSize: 100MB
       maxRequestSize: 300MB
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    driver-class-name: org.postgresql.Driver
-    username: user1
-    password: 1234
 
   mvc:
     log-request-details: true
@@ -45,9 +40,8 @@ logging:
   pattern:
     console: "%d{HH:mm:ss} %-5level %logger{36} - %msg%n"
 
-myblog:
+hr:
   storage:
     type: local
-
     local:
-      root-path: .discodeit/storage
+      root-path: ./storage
