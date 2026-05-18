@@ -1,4 +1,9 @@
-GRANT ALL ON SCHEMA public TO hr_user;
+DROP TABLE IF EXISTS files CASCADE;
+DROP TABLE IF EXISTS departments CASCADE;
+DROP TABLE IF EXISTS employees CASCADE;
+DROP TABLE IF EXISTS data_backups CASCADE;
+DROP TABLE IF EXISTS employee_change_logs CASCADE;
+DROP TABLE IF EXISTS employee_change_log_diffs CASCADE;
 
 -- files 테이블 생성
 CREATE TABLE files (
