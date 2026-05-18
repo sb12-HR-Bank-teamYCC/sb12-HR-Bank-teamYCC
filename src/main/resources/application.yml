@@ -1,14 +1,15 @@
 ﻿spring:
   application:
-    name: br_bank
+    name: hr_bank
 
+# Railway에서 쓸 환경변수
   profiles:
-    active: dev   # dev, prod 선택 가능
+    active: ${SPRING_PROFILES_ACTIVE:dev} 
 
   servlet:
     multipart:
-      maxFileSize: 100MB
-      maxRequestSize: 300MB
+      max-file-size: 100MB
+      max-request-size: 300MB
 
   mvc:
     log-request-details: true
@@ -28,20 +29,18 @@ springdoc:
 # Logging
 logging:
   level:
-    # Hibernate SQL
     org.hibernate.SQL: off
     org.hibernate.orm.jdbc.bind: off
     org.hibernate.type.descriptor.sql: off
 
-    # Spring Web
     org.springframework.web: info
     org.springframework.web.filter.CommonsRequestLoggingFilter: debug
 
   pattern:
     console: "%d{HH:mm:ss} %-5level %logger{36} - %msg%n"
 
-hr:
+hr-bank:
   storage:
     type: local
     local:
-      root-path: ./storage
+      root-path: /data/storage

@@ -6,16 +6,19 @@ spring:
     activate:
       on-profile: prod
 
+  # Railway에서 PostgreSQL 서버를 자동 생성, 환경 변수 또한 대부분 자동 생성
   datasource:
-    url: ${DB_URL}
+    url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
     driver-class-name: org.postgresql.Driver
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
 
   jpa:
     hibernate:
       ddl-auto: validate
+
     show-sql: false
+
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
