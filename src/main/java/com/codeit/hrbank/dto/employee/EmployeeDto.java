@@ -20,19 +20,4 @@ public record EmployeeDto(
         UUID profileImageId
 ) {
 
-    public static EmployeeDto from(Employee employee) {
-        FileMetadata profileImage = employee.getProfileImage();
-        return new EmployeeDto(
-                employee.getId(),
-                employee.getName(),
-                employee.getEmail(),
-                employee.getEmployeeNumber(),
-                employee.getDepartment().getId(),
-                employee.getDepartment().getName(),
-                employee.getPosition(),
-                employee.getHireDate(),
-                employee.getStatus(),
-                profileImage == null ? null : profileImage.getId()
-        );
-    }
 }

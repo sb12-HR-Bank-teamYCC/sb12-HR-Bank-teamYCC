@@ -16,7 +16,7 @@ public record EmployeeCreateRequest(
         @Email(message = "이메일 형식이 올바르지 않습니다.")
         String email,
 
-        @NotBlank(message = "부서 ID는 필수입니다.")
+        @NotNull(message = "부서 ID는 필수입니다.")
         UUID departmentId,
 
         @NotBlank(message = "직함은 필수입니다.")
