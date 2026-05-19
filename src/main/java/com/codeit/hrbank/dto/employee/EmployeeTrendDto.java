@@ -1,5 +1,12 @@
 package com.codeit.hrbank.dto.employee;
 
-public class EmployeeTrendDto {
+import java.time.LocalDate;
+
+public record EmployeeTrendDto(
+        LocalDate date,
+        long count,
+        long change,
+        double changeRate
+) {
 
 }

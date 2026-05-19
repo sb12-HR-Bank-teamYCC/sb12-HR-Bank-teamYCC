@@ -14,7 +14,14 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface DepartmentMapper {
 
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target = "updatedAt", ignore = true)
   Department toEntity(DepartmentCreateRequest request);
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target = "updatedAt", ignore = true)
   Department toEntity(DepartmentUpdateRequest request);
 
   DepartmentDto toDto(Department department, int employeeCount);
