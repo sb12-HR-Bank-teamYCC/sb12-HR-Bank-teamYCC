@@ -6,18 +6,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 @Getter
 @Configuration
 public class FileConfig {
 
+    // 저장 경로는 application.yml에서 주입
+    @Value("${hr-bank.storage.local.root-path}")
+    private String storagePath;
     private Path uploadDir;
 
     @PostConstruct
     public void init() {
-        // user.dir : 애플리케이션 실행 위치 기준 uploads 폴더
-        uploadDir = Paths.get(System.getProperty("user.dir"), "uploads");
+
+        uploadDir = Paths.get(storagePath).toAbsolutePath().normalize();
+
         if (Files.notExists(uploadDir)) {
             try {
                 Files.createDirectories(uploadDir);
