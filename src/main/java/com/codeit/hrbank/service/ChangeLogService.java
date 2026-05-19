@@ -20,14 +20,8 @@ public class ChangeLogService {
 
     @Transactional
     public ChangeLog logCreated(Employee employee, String memo, String ipAddress) {
-        ChangeLog log = ChangeLog.create(
-                ChangeType.CREATED,
-                employee.getId(),
-                employee.getEmployeeNumber(),
-                employee.getName(),
-                memo,
-                ipAddress
-        );
+
+        ChangeLog log = buildLog(ChangeType.CREATED, employee, memo, ipAddress);
 
         log.addDiff("이름", null, employee.getName());
         log.addDiff("이메일", null, employee.getEmail());
@@ -45,14 +39,8 @@ public class ChangeLogService {
 
     @Transactional
     public void logUpdated(EmployeeSnapshot before, Employee after, String memo, String ipAddress) {
-        ChangeLog log = ChangeLog.create(
-                ChangeType.UPDATED,
-                after.getId(),
-                after.getEmployeeNumber(),
-                after.getName(),
-                memo,
-                ipAddress
-        );
+
+        ChangeLog log = buildLog(ChangeType.UPDATED, after, memo, ipAddress);
 
         addDiffIfChanged(log, "이름", before.name(), after.getName());
         addDiffIfChanged(log, "이메일", before.email(), after.getEmail());
@@ -69,14 +57,8 @@ public class ChangeLogService {
 
     @Transactional
     public void logDeleted(EmployeeSnapshot before, String memo, String ipAddress) {
-        ChangeLog log = ChangeLog.create(
-                ChangeType.DELETED,
-                before.id(),
-                before.employeeNumber(),
-                before.name(),
-                memo,
-                ipAddress
-        );
+
+        ChangeLog log = buildLog(ChangeType.DELETED, before, memo, ipAddress);
 
         log.addDiff("이름", before.name(), null);
         log.addDiff("이메일", before.email(), null);
@@ -91,7 +73,33 @@ public class ChangeLogService {
         changeLogRepository.save(log);
     }
 
-    private void addDiffIfChanged(ChangeLog log, String propertyName, String beforeValue, String afterValue) {
+    private ChangeLog buildLog(ChangeType type, Employee employee, String memo, String ipAddress
+    ) {
+        return ChangeLog.builder()
+            .type(type)
+            .employeeId(employee.getId())
+            .employeeNumber(employee.getEmployeeNumber())
+            .employeeName(employee.getName())
+            .memo(memo)
+            .ipAddress(ipAddress)
+            .build();
+    }
+
+    private ChangeLog buildLog(ChangeType type, EmployeeSnapshot snapshot, String memo, String ipAddress
+    ) {
+
+        return ChangeLog.builder()
+            .type(type)
+            .employeeId(snapshot.id())
+            .employeeNumber(snapshot.employeeNumber())
+            .employeeName(snapshot.name())
+            .memo(memo)
+            .ipAddress(ipAddress)
+            .build();
+    }
+
+    private void addDiffIfChanged(ChangeLog log, String propertyName, String beforeValue,
+        String afterValue) {
         if (!Objects.equals(beforeValue, afterValue)) {
             log.addDiff(propertyName, beforeValue, afterValue);
         }
@@ -108,5 +116,4 @@ public class ChangeLogService {
     private String toString(LocalDate value) {
         return value == null ? null : value.toString();
     }
-
 }
