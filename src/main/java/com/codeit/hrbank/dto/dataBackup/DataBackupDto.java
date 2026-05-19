@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @Builder
-public class BackupDto {
+public class DataBackupDto {
   private UUID id;
   private String worker;
   private Instant startedAt;

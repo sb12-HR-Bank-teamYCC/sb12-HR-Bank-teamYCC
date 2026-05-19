@@ -1,6 +1,5 @@
 package com.codeit.hrbank.entity.backupStatus;
 
-
 import com.codeit.hrbank.entity.FileMetadata;
 import com.codeit.hrbank.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
@@ -12,7 +11,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,10 +39,27 @@ public class DataBackup extends BaseUpdatableEntity {
   @Column(name = "status", length = 20)
   private BackupStatus status;
 
-  //@OneToOne(fetch = FetchType.LAZY)
-  //@JoinColumn(name = "file_id")
-  //private FileMetadata fileMetadata;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "file_id")
+  private FileMetadata fileMetadata;
 
-  @Column(name = "file_id")
-  private UUID fileMetadata;
+  /**
+   * STEP.4-1: 백업 성공 처리
+   * status → COMPLETED, endedAt, fileMetadata 설정
+   */
+  public void complete(Instant endedAt, FileMetadata fileMetadata) {
+    this.status = BackupStatus.COMPLETED;
+    this.endedAt = endedAt;
+    this.fileMetadata = fileMetadata;
+  }
+
+  /**
+   * STEP.4-2: 백업 실패 처리
+   * status → FAILED, endedAt, fileMetadata(에러 로그) 설정
+   */
+  public void fail(Instant endedAt, FileMetadata logFileMetadata) {
+    this.status = BackupStatus.FAILED;
+    this.endedAt = endedAt;
+    this.fileMetadata = logFileMetadata;
+  }
 }

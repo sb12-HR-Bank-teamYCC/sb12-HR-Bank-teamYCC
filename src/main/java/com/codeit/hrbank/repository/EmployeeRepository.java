@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import com.codeit.hrbank.entity.employee.EmployeeStatus;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -69,4 +70,15 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
             @Param("prefix") String prefix,
             Pageable pageable
     );
+
+    /**
+     * 데이터 백업용 청크 조회.
+     * department를 JOIN FETCH 해서 N+1 없이 한 번에 가져옵니다.
+     * countQuery를 별도로 지정해 페이징 COUNT 쿼리에서 JOIN FETCH 사용을 방지합니다.
+     */
+    @Query(
+        value = "SELECT e FROM Employee e JOIN FETCH e.department ORDER BY e.id",
+        countQuery = "SELECT COUNT(e) FROM Employee e"
+    )
+    Page<Employee> findAllWithDepartmentForBackup(Pageable pageable);
 }
