@@ -26,41 +26,6 @@ public class DataBackupQueryRepositoryImpl implements DataBackupQueryRepository 
   private static final QDataBackup db = QDataBackup.dataBackup;
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 1. 단건 조회 (fetchJoin으로 fileMetadata N+1 방지)
-  // ─────────────────────────────────────────────────────────────────────────────
-  public Optional<DataBackup> findById(UUID id) {
-    return Optional.ofNullable(
-        queryFactory
-            .selectFrom(db)
-            .leftJoin(db.fileMetadata).fetchJoin()
-            .where(db.id.eq(id))
-            .fetchOne()
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 2. 마지막 백업 시간 기준 조회
-  //    - epoch millis → Instant 변환 후 endedAt ≤ lastBackupTime 인 COMPLETED 중 최신
-  //    - STEP.1: "가장 최근 완료된 배치 작업 시간" 조회에 사용
-  // ─────────────────────────────────────────────────────────────────────────────
-  @Override
-  public Optional<DataBackup> findByLastBackupTime(long lastBackupTime) {
-    Instant threshold = Instant.ofEpochMilli(lastBackupTime);
-
-    return Optional.ofNullable(
-        queryFactory
-            .selectFrom(db)
-            .leftJoin(db.fileMetadata).fetchJoin()
-            .where(
-                db.status.eq(BackupStatus.COMPLETED)
-                    .and(db.endedAt.loe(threshold))
-            )
-            .orderBy(db.endedAt.desc())
-            .fetchFirst()
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────────
   // 3. 특정 상태의 최근 백업 1건 조회
   //    - GET /api/backups/latest?status=COMPLETED (기본값)
   // ─────────────────────────────────────────────────────────────────────────────

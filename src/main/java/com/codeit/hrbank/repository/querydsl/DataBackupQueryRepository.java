@@ -8,11 +8,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface DataBackupQueryRepository {
-
-  // 마지막 백업 시간(epoch millis) 이전의 가장 최근 완료 백업 조회
-  // → STEP.1 백업 필요 여부 판단 시 활용
-  Optional<DataBackup> findByLastBackupTime(long lastBackupTime);
-
   // 특정 상태의 가장 최근 백업 조회
   // → GET /api/backups/latest 에서 활용
   Optional<DataBackup> findLatestByStatus(BackupStatus status);
