@@ -5,11 +5,13 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Entity
 @Table(name = "employee_change_log_diffs")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SuperBuilder
 public class DetailChangeLog extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -25,16 +27,4 @@ public class DetailChangeLog extends BaseEntity {
 
     @Column(name = "after_value", columnDefinition = "TEXT")
     private String afterValue;
-
-    private DetailChangeLog(ChangeLog log, String propertyName, String beforeValue, String afterValue) {
-        this.log = log;
-        this.propertyName = propertyName;
-        this.beforeValue = beforeValue;
-        this.afterValue = afterValue;
-    }
-
-    public static DetailChangeLog create(ChangeLog log, String propertyName, String beforeValue, String afterValue) {
-        return new DetailChangeLog(log, propertyName, beforeValue, afterValue);
-    }
-
 }

@@ -3,8 +3,10 @@ package com.codeit.hrbank.entity.changeLog;
 import com.codeit.hrbank.entity.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "employee_change_logs")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SuperBuilder
 public class ChangeLog extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
@@ -39,40 +42,18 @@ public class ChangeLog extends BaseEntity {
     @Column(name = "at", nullable = false)
     private Instant at;
 
+    @Builder.Default
     @OneToMany(mappedBy = "log", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetailChangeLog> diffs = new ArrayList<>();
 
-    private ChangeLog(ChangeType type, UUID employeeId, String employeeNumber, String employeeName, String memo,
-                      String ipAddress, Instant at) {
-        this.type = type;
-        this.employeeId = employeeId;
-        this.employeeNumber = employeeNumber;
-        this.employeeName = employeeName;
-        this.memo = memo;
-        this.ipAddress = ipAddress;
-        this.at = at;
-    }
-
-    public static ChangeLog create(ChangeType type, UUID employeeId, String employeeNumber, String employeeName,
-                                   String memo, String ipAddress) {
-        return new ChangeLog(
-                type,
-                employeeId,
-                employeeNumber,
-                employeeName,
-                memo,
-                ipAddress,
-                Instant.now()
-        );
-    }
-
     public void addDiff(String propertyName, String beforeValue, String afterValue) {
-        DetailChangeLog diff = DetailChangeLog.create(
-                this,
-                propertyName,
-                beforeValue,
-                afterValue
-        );
+        DetailChangeLog diff = DetailChangeLog.builder()
+                .log(this)
+                .propertyName(propertyName)
+                .beforeValue(beforeValue)
+                .afterValue(afterValue)
+                .build();
+
         this.diffs.add(diff);
     }
 

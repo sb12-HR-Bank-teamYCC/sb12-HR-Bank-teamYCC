@@ -51,31 +51,6 @@ public class Employee extends BaseUpdatableEntity {
                 foreignKey = @ForeignKey(name = "fk_employees_profile_image"))
     private FileMetadata profileImage;
 
-    private Employee(String name, String email, String employeeNumber, Department department, String position,
-                         LocalDate hireDate, FileMetadata profileImage) {
-        this.name = name;
-        this.email = email;
-        this.employeeNumber = employeeNumber;
-        this.department = department;
-        this.position = position;
-        this.hireDate = hireDate;
-        this.status = EmployeeStatus.ACTIVE;
-        this.profileImage = profileImage;
-    }
-
-    public static Employee create(String name, String email, String employeeNumber, Department department,
-                                  String position, LocalDate hireDate, FileMetadata profileImage) {
-        return new Employee(
-                name,
-                email,
-                employeeNumber,
-                department,
-                position,
-                hireDate,
-                profileImage
-        );
-    }
-
     public void update(String name, String email, Department department,
                                   String position, LocalDate hireDate, EmployeeStatus status, FileMetadata profileImage) {
         this.name = name;
