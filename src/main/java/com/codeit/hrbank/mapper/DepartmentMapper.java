@@ -22,8 +22,4 @@ public interface DepartmentMapper {
 
   @Mapping(target = "employeeCount", constant = "0")
   DepartmentResponse toResponse(Department department);
-
-  default LocalDateTime map(Instant instant) {
-    return instant == null ? null : LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-  }
 }
