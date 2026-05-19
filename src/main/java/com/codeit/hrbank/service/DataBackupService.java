@@ -1,7 +1,9 @@
 package com.codeit.hrbank.service;
 
 import com.codeit.hrbank.common.config.FileConfig;
+import com.codeit.hrbank.common.exception.ErrorCode;
 import com.codeit.hrbank.dto.dataBackup.DataBackupDto;
+import com.codeit.hrbank.dto.error.HrBankException;
 import com.codeit.hrbank.dto.page.CursorPageResponse;
 import com.codeit.hrbank.entity.FileMetadata;
 import com.codeit.hrbank.entity.backupStatus.BackupStatus;
@@ -316,8 +318,8 @@ public class DataBackupService {
     if (status == null || status.isBlank()) return null;
     try {
       return BackupStatus.valueOf(status.toUpperCase());
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("지원하지 않는 상태값입니다: " + status);
+    } catch (HrBankException e) {
+      throw new HrBankException(ErrorCode.INVALID_STATUS);
     }
   }
 }
