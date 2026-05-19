@@ -37,8 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DataBackupService {
 
   private static final int CHUNK_SIZE = 1000;
-  private static final String CSV_HEADER =
-      "id,name,email,employeeNumber,department,position,hireDate,status";
+  private static final String CSV_HEADER = "id,name,email,employeeNumber,department,position,hireDate,status";
 
   private final DataBackupRepository dataBackupRepository;
   private final ChangeLogRepository changeLogRepository;
@@ -48,25 +47,8 @@ public class DataBackupService {
   private final FileConfig fileConfig;
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 배치 스케줄러 (Spring Scheduler, 주기는 application.yml로 주입)
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  /**
-   * application.yml 설정 예시:
-   *   hr-bank:
-   *     backup:
-   *       cron: "0 0 * * * *"   # 매 1시간마다
-   */
-  @Scheduled(cron = "${hr-bank.backup.schedule-cron}")
-  public void scheduledBackup() {
-    log.info("[Backup] 스케줄 배치 시작");
-    backup("system");
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────────
   // 데이터 백업 프로세스 (STEP 1 ~ 4)
   // ─────────────────────────────────────────────────────────────────────────────
-
   @Transactional
   public DataBackupDto backup(String worker) {
 
