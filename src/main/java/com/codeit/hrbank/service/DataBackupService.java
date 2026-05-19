@@ -191,6 +191,7 @@ public class DataBackupService {
    */
   private void writeCsvInChunks(Path csvPath) throws IOException {
     try (BufferedWriter writer = Files.newBufferedWriter(csvPath, StandardCharsets.UTF_8)) {
+      writer.write('\uFEFF'); // UTF-8 BOM
       writer.write(CSV_HEADER);
       writer.newLine();
 

@@ -42,4 +42,7 @@ hr-bank:
     local:
       root-path: /data/storage
   backup:
+    ## 테스트 10초마다
+    ## schedule-cron: "*/10 * * * * *"
+    ## 테스트 1시간 마다
     schedule-cron: "0 0 * * * *"
