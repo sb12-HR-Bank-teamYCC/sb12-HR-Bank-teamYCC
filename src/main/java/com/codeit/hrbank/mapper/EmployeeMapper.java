@@ -3,7 +3,7 @@ package com.codeit.hrbank.mapper;
 import com.codeit.hrbank.dto.employee.EmployeeCreateRequest;
 import com.codeit.hrbank.dto.employee.EmployeeDto;
 import com.codeit.hrbank.entity.Department;
-import com.codeit.hrbank.entity.FileMetadata;
+import com.codeit.hrbank.entity.file.FileMetadata;
 import com.codeit.hrbank.entity.employee.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

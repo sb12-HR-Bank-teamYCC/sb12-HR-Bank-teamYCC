@@ -5,16 +5,16 @@ import com.codeit.hrbank.common.exception.ErrorCode;
 import com.codeit.hrbank.dto.dataBackup.DataBackupDto;
 import com.codeit.hrbank.dto.error.HrBankException;
 import com.codeit.hrbank.dto.page.CursorPageResponse;
-import com.codeit.hrbank.entity.FileMetadata;
+import com.codeit.hrbank.entity.file.FileMetadata;
 import com.codeit.hrbank.entity.backupStatus.BackupStatus;
 import com.codeit.hrbank.entity.backupStatus.DataBackup;
 import com.codeit.hrbank.entity.employee.Employee;
+import com.codeit.hrbank.entity.file.FileTypeConst;
 import com.codeit.hrbank.mapper.DataBackupMapper;
 import com.codeit.hrbank.repository.ChangeLogRepository;
 import com.codeit.hrbank.repository.DataBackupRepository;
 import com.codeit.hrbank.repository.EmployeeRepository;
 import com.codeit.hrbank.repository.FileMetadataRepository;
-import com.codeit.hrbank.repository.querydsl.DataBackupQueryRepository;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -84,7 +84,7 @@ public class DataBackupService {
       writeCsvInChunks(tempCsvPath);
 
       // STEP.4-1: 성공 → FileMetadata 저장 후 completed
-      FileMetadata csvMeta = saveFileMetadata(tempCsvPath, "text/csv", "BACKUP");
+      FileMetadata csvMeta = saveFileMetadata(tempCsvPath, "text/csv", FileTypeConst.BACKUP);
       backup.complete(Instant.now(), csvMeta);
       DataBackup completed = dataBackupRepository.save(backup);
       log.info("[Backup] 백업 성공, id={}, file={}", completed.getId(), tempCsvPath.getFileName());
@@ -161,8 +161,10 @@ public class DataBackupService {
   // ─────────────────────────────────────────────────────────────────────────────
 
   /**
-   * STEP.1: 백업 필요 여부 판단 - 완료된 백업이 없으면 → true (최초 실행) - endedAt이 null이면 → true (비정상 완료) - 마지막 완료 이후
-   * 변경된 직원 데이터가 있으면 → true
+   * STEP.1: 백업 필요 여부 판단
+   * - 완료된 백업이 없으면 → true (최초 실행)
+   * - endedAt이 null이면 → true (비정상 완료)
+   * - 마지막 완료 이후 변경된 직원 데이터가 있으면 → true
    */
   private boolean isBackupNeeded() {
 
@@ -174,8 +176,7 @@ public class DataBackupService {
 
           log.info("lastEndedAt={}", lastEndedAt);
 
-          boolean exists =
-              changeLogRepository.existsByAtAfter(lastEndedAt);
+          boolean exists = changeLogRepository.existsByAtAfter(lastEndedAt);
 
           log.info("existsChangeLog={}", exists);
 
@@ -251,7 +252,7 @@ public class DataBackupService {
           + ", time=" + Instant.now() + "\n" + sw;
 
       Files.writeString(logPath, logContent, StandardCharsets.UTF_8);
-      return saveFileMetadata(logPath, "text/plain", "BACKUP_LOG");
+      return saveFileMetadata(logPath, "text/plain", FileTypeConst.BACKUP_LOG);
 
     } catch (IOException ioEx) {
       log.error("[Backup] 에러 로그 파일 저장 실패, id={}", backupId, ioEx);
@@ -284,52 +285,27 @@ public class DataBackupService {
   // ─────────────────────────────────────────────────────────────────────────────
 
   private Path buildCsvPath(UUID backupId) {
-
-    Path dateDir = createBackupDirectory();
-
-    String timestamp =
-        LocalDateTime.now().format(BACKUP_NAME_FORMAT);
-
-    String fileName =
-        "backup_" + timestamp + "-" + backupId + ".csv";
-
-    return dateDir.resolve(fileName);
+    Path backupDir = getBackupDirectory();  // ✅ backups/ 바로 사용
+    String timestamp = LocalDateTime.now().format(BACKUP_NAME_FORMAT);
+    String fileName = "backup_" + timestamp + "-" + backupId + ".csv";
+    return backupDir.resolve(fileName);
   }
 
   private Path buildLogPath(UUID backupId) {
-
-    Path dateDir = createBackupDirectory();
-
-    String timestamp =
-        LocalDateTime.now().format(BACKUP_NAME_FORMAT);
-
-    String fileName =
-        "backup_" + timestamp + "-" + backupId + ".log";
-
-    return dateDir.resolve(fileName);
+    Path backupDir = getBackupDirectory();  // ✅ backups/ 바로 사용
+    String timestamp = LocalDateTime.now().format(BACKUP_NAME_FORMAT);
+    String fileName = "backup_" + timestamp + "-" + backupId + ".log";
+    return backupDir.resolve(fileName);
   }
 
-  private Path createBackupDirectory() {
-
-    String date =
-        LocalDate.now().format(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        );
-
-    Path dateDir =
-        fileConfig.getBackupDir().resolve(date);
-
+  private Path getBackupDirectory() {
+    Path backupDir = fileConfig.getBackupDir();  // ✅ 날짜 서브폴더 없이 backupDir 직접 사용
     try {
-      Files.createDirectories(dateDir);
+      Files.createDirectories(backupDir);
     } catch (IOException e) {
-      throw new RuntimeException(
-          "디렉토리 생성 실패: "
-              + dateDir.toAbsolutePath(),
-          e
-      );
+      throw new RuntimeException("디렉토리 생성 실패: " + backupDir.toAbsolutePath(), e);
     }
-
-    return dateDir;
+    return backupDir;
   }
 
   private void deleteQuietly(Path path) {

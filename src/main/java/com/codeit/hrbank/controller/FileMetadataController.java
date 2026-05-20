@@ -1,7 +1,8 @@
 package com.codeit.hrbank.controller;
 
 import com.codeit.hrbank.common.config.FileConfig;
-import com.codeit.hrbank.entity.FileMetadata;
+import com.codeit.hrbank.entity.file.FileMetadata;
+import com.codeit.hrbank.entity.file.FileTypeConst;
 import com.codeit.hrbank.service.FileMetadataService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -31,7 +32,28 @@ public class FileMetadataController {
 
     FileMetadata file = fileMetadataService.findById(id);
 
-    Path filePath = fileConfig.getUploadDir().resolve(file.getStoredName()).normalize();
+    Path filePath;
+
+    switch (file.getFileType()) {
+
+      case FileTypeConst.PROFILE_IMAGE ->
+
+          filePath = fileConfig.getImageDir()
+              .resolve(file.getStoredName())
+              .normalize();
+
+      case FileTypeConst.BACKUP,
+           FileTypeConst.BACKUP_LOG ->
+
+          filePath = fileConfig.getBackupDir()
+              .resolve(file.getStoredName())
+              .normalize();
+
+      default -> {
+        return ResponseEntity.badRequest().build();
+      }
+    }
+
 
     Resource resource;
     try {
