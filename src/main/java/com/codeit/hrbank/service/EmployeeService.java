@@ -3,6 +3,7 @@ package com.codeit.hrbank.service;
 import com.codeit.hrbank.common.exception.ErrorCode;
 import com.codeit.hrbank.dto.employee.*;
 import com.codeit.hrbank.dto.error.HrBankException;
+import com.codeit.hrbank.dto.page.CursorPageResponse;
 import com.codeit.hrbank.entity.Department;
 import com.codeit.hrbank.entity.file.FileMetadata;
 import com.codeit.hrbank.entity.employee.Employee;
@@ -11,6 +12,7 @@ import com.codeit.hrbank.entity.file.FileTypeConst;
 import com.codeit.hrbank.mapper.EmployeeMapper;
 import com.codeit.hrbank.repository.DepartmentRepository;
 import com.codeit.hrbank.repository.EmployeeRepository;
+import java.util.Base64;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -332,5 +334,73 @@ public class EmployeeService {
         }
 
         return Math.round(((currentCount - previousCount) * 10000.0 / previousCount)) / 100.0;
+    }
+
+    @Transactional(readOnly = true)
+    public CursorPageResponse<EmployeeDto> getEmployees(
+        String nameOrEmail, String employeeNumber, String departmentName,
+        String position, LocalDate hireDateFrom, LocalDate hireDateTo,
+        EmployeeStatus status, UUID idAfter, String cursor,
+        int size, String sortField, String sortDirection
+    ) {
+        String normalizedSortField = normalizeSortField(sortField);
+        String normalizedSortDir   = normalizeSortDirection(sortDirection);
+
+        // size+1 개 조회해서 다음 페이지 존재 여부 판단
+        List<Employee> employees = employeeRepository.findAllWithFilters(
+            nameOrEmail, employeeNumber, departmentName, position,
+            hireDateFrom, hireDateTo, status,
+            cursor, idAfter,
+            size + 1, normalizedSortField, normalizedSortDir
+        );
+
+        boolean hasNext = employees.size() > size;
+        if (hasNext) {
+            employees = employees.subList(0, size);
+        }
+
+        long totalElements = employeeRepository.countWithFilters(
+            nameOrEmail, employeeNumber, departmentName, position,
+            hireDateFrom, hireDateTo, status
+        );
+
+        String nextCursor   = null;
+        String nextIdAfter  = null;
+
+        if (!employees.isEmpty()) {
+            Employee last = employees.get(employees.size() - 1);
+            nextCursor  = encodeCursor(last, normalizedSortField);
+            nextIdAfter = last.getId().toString();
+        }
+
+        List<EmployeeDto> content = employees.stream()
+            .map(employeeMapper::toDto)
+            .toList();
+
+        return new CursorPageResponse<>(content, nextCursor, nextIdAfter, size, totalElements, hasNext);
+    }
+
+// ── 유틸 ──────────────────────────────────────────────────────────────────────
+
+    private String encodeCursor(Employee employee, String sortField) {
+        String raw = switch (sortField) {
+            case "employeeNumber" -> employee.getEmployeeNumber();
+            case "hireDate"       -> employee.getHireDate().toString();
+            default               -> employee.getName();
+        };
+        return Base64.getEncoder().encodeToString(raw.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    private String normalizeSortField(String sortField) {
+        if (sortField == null) return "name";
+        return switch (sortField.toLowerCase()) {
+            case "employeenumber" -> "employeeNumber";
+            case "hiredate"       -> "hireDate";
+            default               -> "name";
+        };
+    }
+
+    private String normalizeSortDirection(String sortDirection) {
+        return "desc".equalsIgnoreCase(sortDirection) ? "desc" : "asc";
     }
 }

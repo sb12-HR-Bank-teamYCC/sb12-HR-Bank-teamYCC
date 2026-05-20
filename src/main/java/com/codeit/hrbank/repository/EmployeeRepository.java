@@ -2,6 +2,7 @@ package com.codeit.hrbank.repository;
 
 import com.codeit.hrbank.entity.employee.Employee;
 
+import com.codeit.hrbank.repository.querydsl.EmployeeRepositoryCustom;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +16,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
+public interface EmployeeRepository extends JpaRepository<Employee, UUID>, EmployeeRepositoryCustom {
 
     boolean existsByEmail(String email);
 

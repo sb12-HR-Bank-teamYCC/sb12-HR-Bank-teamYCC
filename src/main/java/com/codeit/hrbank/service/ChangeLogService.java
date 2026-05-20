@@ -2,20 +2,25 @@ package com.codeit.hrbank.service;
 
 import com.codeit.hrbank.common.exception.ErrorCode;
 import com.codeit.hrbank.dto.changeLog.ChangeLogDetailDto;
+import com.codeit.hrbank.dto.changeLog.ChangeLogDto;
 import com.codeit.hrbank.dto.error.HrBankException;
-import com.codeit.hrbank.entity.file.FileMetadata;
+import com.codeit.hrbank.dto.page.CursorPageResponse;
 import com.codeit.hrbank.entity.changeLog.ChangeLog;
 import com.codeit.hrbank.entity.changeLog.ChangeType;
 import com.codeit.hrbank.entity.employee.Employee;
+import com.codeit.hrbank.entity.file.FileMetadata;
 import com.codeit.hrbank.mapper.ChangeLogMapper;
 import com.codeit.hrbank.repository.ChangeLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -82,6 +87,47 @@ public class ChangeLogService {
     }
 
     @Transactional(readOnly = true)
+    public CursorPageResponse<ChangeLogDto> getChangeLogs(
+            String employeeNumber, ChangeType type, String memo, String ipAddress,
+            Instant atFrom, Instant atTo,
+            UUID idAfter, String cursor,
+            int size, String sortField, String sortDirection
+    ) {
+        String normSortField = normalizeSortField(sortField);
+        String normSortDir = "asc".equalsIgnoreCase(sortDirection) ? "asc" : "desc";
+
+        List<ChangeLog> logs = changeLogRepository.findAllWithFilters(
+                employeeNumber, type, memo, ipAddress,
+                atFrom, atTo,
+                idAfter, cursor,
+                size + 1, normSortField, normSortDir
+        );
+
+        boolean hasNext = logs.size() > size;
+        if (hasNext) {
+            logs = logs.subList(0, size);
+        }
+
+        long totalElements = changeLogRepository.countWithFilters(
+                employeeNumber, type, memo, ipAddress, atFrom, atTo
+        );
+
+        String nextCursor = null;
+        String nextIdAfter = null;
+        if (!logs.isEmpty()) {
+            ChangeLog last = logs.get(logs.size() - 1);
+            nextCursor = encodeCursor(last, normSortField);
+            nextIdAfter = last.getId().toString();
+        }
+
+        List<ChangeLogDto> content = logs.stream()
+                .map(changeLogMapper::toDto)
+                .toList();
+
+        return new CursorPageResponse<>(content, nextCursor, nextIdAfter, size, totalElements, hasNext);
+    }
+
+    @Transactional(readOnly = true)
     public ChangeLogDetailDto findDetail(UUID id) {
         ChangeLog changeLog = changeLogRepository.findWithDiffsById(id)
                 .orElseThrow(() -> new HrBankException(ErrorCode.CHANGE_LOG_NOT_FOUND));
@@ -145,5 +191,21 @@ public class ChangeLogService {
 
     private String toString(LocalDate value) {
         return value == null ? null : value.toString();
+    }
+
+    private String encodeCursor(ChangeLog log, String sortField) {
+        String sortValue = "ipAddress".equals(sortField)
+                ? (log.getIpAddress() != null ? log.getIpAddress() : "")
+                : log.getAt().toString();
+        String raw = sortValue + ":" + log.getId().toString();
+        return Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String normalizeSortField(String sortField) {
+        if (sortField == null) return "at";
+        return switch (sortField.toLowerCase()) {
+            case "ipaddress" -> "ipAddress";
+            default -> "at";
+        };
     }
 }

@@ -1,6 +1,7 @@
 package com.codeit.hrbank.controller;
 
 import com.codeit.hrbank.dto.employee.*;
+import com.codeit.hrbank.dto.page.CursorPageResponse;
 import com.codeit.hrbank.entity.employee.EmployeeStatus;
 import com.codeit.hrbank.service.EmployeeService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -66,7 +67,7 @@ public class EmployeeController {
         return employeeService.getDistribution(groupBy, status);
     }
 
-    @GetMapping("/status/trend")
+    @GetMapping("/stats/trend")
     public List<EmployeeTrendDto> getTrend(@RequestParam(required = false)
                                            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                                            @RequestParam(required = false)
@@ -85,4 +86,41 @@ public class EmployeeController {
 
         return request.getRemoteAddr();
     }
+
+    @GetMapping
+    public CursorPageResponse<EmployeeDto> getAllEmployees(
+        @RequestParam(required = false) String nameOrEmail,
+        @RequestParam(required = false) String employeeNumber,
+        @RequestParam(required = false) String departmentName,
+        @RequestParam(required = false) String position,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate hireDateFrom,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate hireDateTo,
+        @RequestParam(required = false) EmployeeStatus status,
+        @RequestParam(value = "idAfter", required = false) UUID idAfter,
+        @RequestParam(required = false) String cursor,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "name") String sortField,
+        @RequestParam(defaultValue = "asc") String sortDirection
+    ) {
+
+        return employeeService.getEmployees(
+            nameOrEmail,
+            employeeNumber,
+            departmentName,
+            position,
+            hireDateFrom,
+            hireDateTo,
+            status,
+            idAfter,
+            cursor,
+            size,
+            sortField,
+            sortDirection
+        );
+    }
+
 }

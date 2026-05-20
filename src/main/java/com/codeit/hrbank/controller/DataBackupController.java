@@ -46,7 +46,7 @@ public class DataBackupController {
       @RequestParam(required = false) String cursor,
       @RequestParam(defaultValue = "10") int size,
       @RequestParam(defaultValue = "startedAt") String sortField,
-      String sortDirection
+      @RequestParam(defaultValue = "DESC") String sortDirection
   ) {
     CursorPageResponse<DataBackupDto> response = dataBackupService.getBackups(
         worker, status, startedAtFrom, startedAtTo,

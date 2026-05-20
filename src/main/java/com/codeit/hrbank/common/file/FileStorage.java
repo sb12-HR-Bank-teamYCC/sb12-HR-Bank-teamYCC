@@ -2,6 +2,7 @@ package com.codeit.hrbank.common.file;
 
 import com.codeit.hrbank.common.config.FileConfig;
 import com.codeit.hrbank.entity.file.FileMetadata;
+import com.codeit.hrbank.entity.file.FileTypeConst;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,7 +52,16 @@ public class FileStorage {
         .storedName(storedName)
         .contentType(file.getContentType())
         .size(file.getSize())
+        .fileType(FileTypeConst.PROFILE_IMAGE)  // 추가
         .build();
+  }
+
+  private String resolveFileType(String contentType) {
+    if (contentType == null) return "OTHER";
+    if (contentType.startsWith("image/")) return "IMAGE";
+    if (contentType.equals("application/pdf")) return "PDF";
+    if (contentType.equals("text/csv")) return "CSV";
+    return "OTHER";
   }
 
   // 파일 삭제
