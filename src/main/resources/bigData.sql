@@ -230,8 +230,8 @@ SELECT
         ELSE        '신규 직원 등록'
     END,
     '192.168.0.' || ((tl.rn % 40) + 1),
-    '2026-01-01'::timestamp
-        + floor(tl.rn::numeric / 30000 * 140)::int * INTERVAL '1 day'
+    '2025-01-01'::timestamp
+        + floor(tl.rn::numeric / 30000 * 120)::int * INTERVAL '1 day'
         + (tl.rn % 86400) * INTERVAL '1 second'
 FROM _t_logs tl
 JOIN _t_employees te ON te.rn = ((tl.rn - 1) % 10000) + 1;
