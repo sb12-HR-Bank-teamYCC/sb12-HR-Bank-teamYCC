@@ -18,7 +18,7 @@ public class DepartmentSearchRequest {
   private String cursor;
 
   @Builder.Default
-  private int Size = 10;
+  private int size = 10;
 
   @Builder.Default
   private SortField sortField = SortField.ESTABLISHED_DATE;
