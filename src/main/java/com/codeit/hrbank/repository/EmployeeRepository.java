@@ -2,6 +2,7 @@ package com.codeit.hrbank.repository;
 
 import com.codeit.hrbank.entity.employee.Employee;
 
+import com.codeit.hrbank.repository.querydsl.EmployeeRepositoryCustom;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +16,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
+public interface EmployeeRepository extends JpaRepository<Employee, UUID>, EmployeeRepositoryCustom {
 
     boolean existsByEmail(String email);
 
@@ -24,16 +25,16 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
     boolean existsByEmployeeNumber(String employeeNumber);
 
     @Query("""
-        SELECT COUNT(e)
-        FROM Employee e
-        WHERE (:status IS NULL OR e.status = :status)
-          AND (:fromDate IS NULL OR e.hireDate >= :fromDate)
-          AND (:toDate IS NULL OR e.hireDate <= :toDate)
-    """)
+    SELECT COUNT(e)
+    FROM Employee e
+    WHERE (:status IS NULL OR e.status = :status)
+      AND (CAST(:fromDate AS java.time.LocalDate) IS NULL OR e.hireDate >= :fromDate)
+      AND (CAST(:toDate AS java.time.LocalDate) IS NULL OR e.hireDate <= :toDate)
+""")
     long countEmployees(
-            @Param("status") EmployeeStatus status,
-            @Param("fromDate") LocalDate fromDate,
-            @Param("toDate") LocalDate toDate
+        @Param("status") EmployeeStatus status,
+        @Param("fromDate") LocalDate fromDate,
+        @Param("toDate") LocalDate toDate
     );
 
     @Query("""

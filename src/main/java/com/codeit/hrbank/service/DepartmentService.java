@@ -27,7 +27,7 @@ public class DepartmentService {
   @Transactional
   public DepartmentResponse createDepartment(DepartmentCreateRequest request) {
     if (departmentRepository.existsByName(request.getName())) {
-      throw new HrBankException(ErrorCode.DUPLICATE_DEPARTMENT_NAME);
+      throw new IllegalArgumentException("이미 존재하는 부서 이름입니다");
     }
 
     Department department = Department.builder()
@@ -58,7 +58,7 @@ public class DepartmentService {
         .orElseThrow(() -> new HrBankException(ErrorCode.DEPARTMENT_NOT_FOUND));
 
     if (departmentRepository.existsByNameAndIdNot(request.getName(), id)) {
-      throw new HrBankException(ErrorCode.DUPLICATE_DEPARTMENT_NAME);
+      throw new IllegalArgumentException("이미 존재하는 부서 이름입니다");
     }
 
     department.update(request.getName(), request.getDescription(), request.getEstablishedDate());
@@ -76,7 +76,7 @@ public class DepartmentService {
 
     long employeeCount = departmentRepository.countEmployeesByDepartmentId(id);
     if (employeeCount > 0) {
-      throw new HrBankException(ErrorCode.DEPARTMENT_HAS_EMPLOYEES);
+      throw new IllegalStateException("소속된 직원이 있어 삭제할 수 없습니다");
     }
     departmentRepository.delete(department);
   }

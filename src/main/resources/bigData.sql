@@ -43,13 +43,12 @@ INSERT INTO departments (id, name, description, established_date, created_at, up
 -- 2. 프로필 이미지 파일 ID 사전 생성 (TEMP)
 --    → employees.profile_image_id FK를 맞추기 위해 미리 UUID 확정
 -- ────────────────────────────────────────────────────────────
-CREATE TEMP TABLE _t_profile_files (
-    rn      int  PRIMARY KEY,
-    file_id uuid NOT NULL DEFAULT gen_random_uuid()
-);
-
-INSERT INTO _t_profile_files (rn)
-SELECT generate_series(1, 10000);
+CREATE TEMP TABLE _t_profile_files AS
+SELECT
+    id AS file_id,
+    row_number() OVER (ORDER BY id) AS rn
+FROM files
+WHERE file_type = 'PROFILE_IMAGE';
 
 -- ────────────────────────────────────────────────────────────
 -- 3. files — PROFILE_IMAGE 10,000건
@@ -104,8 +103,8 @@ FROM departments;
 --    status: ACTIVE / ON_LEAVE / RESIGNED 순환
 -- ────────────────────────────────────────────────────────────
 INSERT INTO employees
-    (id, name, email, employee_number, position, hire_date,
-     status, created_at, updated_at, department_id, profile_image_id)
+(id, name, email, employee_number, position, hire_date,
+ status, created_at, updated_at, department_id, profile_image_id)
 SELECT
     te.emp_id,
     te.emp_name,
@@ -118,9 +117,16 @@ SELECT
     '2025-06-01'::timestamp + floor(random() * 365)::int * INTERVAL '1 day',
     '2025-06-01'::timestamp + floor(random() * 365)::int * INTERVAL '1 day' + INTERVAL '2 hours',
     (SELECT dept_id FROM _t_departments WHERE rn = ((te.rn - 1) % 10) + 1),
-    tf.file_id
-FROM _t_employees te
-JOIN _t_profile_files tf ON tf.rn = te.rn;
+
+    CASE
+        WHEN random() < 0.2 THEN NULL
+        ELSE (
+            SELECT tf.file_id
+            FROM _t_profile_files tf
+            WHERE tf.rn = te.rn
+        )
+        END
+FROM _t_employees te;
 
 -- ────────────────────────────────────────────────────────────
 -- 7. 백업 계획 수립 (TEMP)
@@ -230,8 +236,8 @@ SELECT
         ELSE        '신규 직원 등록'
     END,
     '192.168.0.' || ((tl.rn % 40) + 1),
-    '2025-01-01'::timestamp
-        + floor(tl.rn::numeric / 30000 * 120)::int * INTERVAL '1 day'
+    '2026-01-01'::timestamp
+        + floor(tl.rn::numeric / 30000 * 140)::int * INTERVAL '1 day'
         + (tl.rn % 86400) * INTERVAL '1 second'
 FROM _t_logs tl
 JOIN _t_employees te ON te.rn = ((tl.rn - 1) % 10000) + 1;
