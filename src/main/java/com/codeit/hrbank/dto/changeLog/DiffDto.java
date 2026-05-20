@@ -1,5 +1,9 @@
 package com.codeit.hrbank.dto.changeLog;
 
-public class DiffDto {
+public record DiffDto(
+        String propertyName,
+        String before,
+        String after
+) {
 
 }
