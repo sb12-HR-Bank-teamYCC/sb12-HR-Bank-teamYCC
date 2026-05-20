@@ -1,7 +1,7 @@
 package com.codeit.hrbank.entity.employee;
 
 import com.codeit.hrbank.entity.Department;
-import com.codeit.hrbank.entity.FileMetadata;
+import com.codeit.hrbank.entity.file.FileMetadata;
 import com.codeit.hrbank.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

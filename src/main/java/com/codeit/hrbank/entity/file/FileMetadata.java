@@ -1,7 +1,6 @@
-package com.codeit.hrbank.entity;
+package com.codeit.hrbank.entity.file;
 
 import com.codeit.hrbank.entity.base.BaseEntity;
-import com.codeit.hrbank.entity.base.BaseUpdatableEntity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

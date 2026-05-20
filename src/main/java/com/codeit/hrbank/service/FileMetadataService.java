@@ -1,7 +1,7 @@
 package com.codeit.hrbank.service;
 
 import com.codeit.hrbank.common.file.FileStorage;
-import com.codeit.hrbank.entity.FileMetadata;
+import com.codeit.hrbank.entity.file.FileMetadata;
 import com.codeit.hrbank.repository.FileMetadataRepository;
 import java.util.Collection;
 import java.util.List;

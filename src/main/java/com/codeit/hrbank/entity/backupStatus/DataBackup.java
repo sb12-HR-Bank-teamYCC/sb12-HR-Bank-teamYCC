@@ -1,6 +1,6 @@
 package com.codeit.hrbank.entity.backupStatus;
 
-import com.codeit.hrbank.entity.FileMetadata;
+import com.codeit.hrbank.entity.file.FileMetadata;
 import com.codeit.hrbank.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -3,7 +3,7 @@ package com.codeit.hrbank.service;
 import com.codeit.hrbank.common.exception.ErrorCode;
 import com.codeit.hrbank.dto.changeLog.ChangeLogDetailDto;
 import com.codeit.hrbank.dto.error.HrBankException;
-import com.codeit.hrbank.entity.FileMetadata;
+import com.codeit.hrbank.entity.file.FileMetadata;
 import com.codeit.hrbank.entity.changeLog.ChangeLog;
 import com.codeit.hrbank.entity.changeLog.ChangeType;
 import com.codeit.hrbank.entity.employee.Employee;
