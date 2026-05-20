@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class BackupScheduler {
   private final DataBackupService dataBackupService;
 
-  @Scheduled(cron = "${hr-bank.backup.schedule-cron:0 0 * * * *}")
+  @Scheduled(cron = "${hr-bank.backup.schedule-cron}")
   public void runBackup() {
     log.info("[DataBackupScheduler] 배치 백업 시작");
     try {
