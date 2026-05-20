@@ -4,7 +4,7 @@ import com.codeit.hrbank.common.exception.ErrorCode;
 import com.codeit.hrbank.dto.employee.*;
 import com.codeit.hrbank.dto.error.HrBankException;
 import com.codeit.hrbank.entity.Department;
-import com.codeit.hrbank.entity.FileMetadata;
+import com.codeit.hrbank.entity.file.FileMetadata;
 import com.codeit.hrbank.entity.employee.Employee;
 import com.codeit.hrbank.entity.employee.EmployeeStatus;
 import com.codeit.hrbank.mapper.EmployeeMapper;

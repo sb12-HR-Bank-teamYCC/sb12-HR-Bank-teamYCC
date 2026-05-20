@@ -1,6 +1,6 @@
 package com.codeit.hrbank.service;
 
-import com.codeit.hrbank.entity.FileMetadata;
+import com.codeit.hrbank.entity.file.FileMetadata;
 import com.codeit.hrbank.entity.employee.Employee;
 
 import java.util.UUID;

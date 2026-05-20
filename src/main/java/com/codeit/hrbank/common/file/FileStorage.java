@@ -1,7 +1,7 @@
 package com.codeit.hrbank.common.file;
 
 import com.codeit.hrbank.common.config.FileConfig;
-import com.codeit.hrbank.entity.FileMetadata;
+import com.codeit.hrbank.entity.file.FileMetadata;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,5 +70,4 @@ public class FileStorage {
       }
     }
   }
-
 }

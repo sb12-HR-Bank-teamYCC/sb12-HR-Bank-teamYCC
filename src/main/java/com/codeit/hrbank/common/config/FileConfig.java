@@ -14,11 +14,13 @@ public class FileConfig {
 
     private Path uploadDir;
     private Path backupDir;
+    private Path imageDir;
 
     @PostConstruct
     public void init() {
         uploadDir = createDirectory("uploads");
         backupDir = createDirectory("uploads/backups");
+        imageDir = createDirectory("uploads/images");
     }
 
     private Path createDirectory(String path) {
