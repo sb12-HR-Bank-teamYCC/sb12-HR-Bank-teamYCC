@@ -7,6 +7,7 @@ import com.codeit.hrbank.entity.Department;
 import com.codeit.hrbank.entity.file.FileMetadata;
 import com.codeit.hrbank.entity.employee.Employee;
 import com.codeit.hrbank.entity.employee.EmployeeStatus;
+import com.codeit.hrbank.entity.file.FileTypeConst;
 import com.codeit.hrbank.mapper.EmployeeMapper;
 import com.codeit.hrbank.repository.DepartmentRepository;
 import com.codeit.hrbank.repository.EmployeeRepository;
@@ -29,7 +30,7 @@ public class EmployeeService {
     private final DepartmentRepository departmentRepository;
     private final ChangeLogService changeLogService;
     private final EmployeeMapper employeeMapper;
-//    private final FileMetadataService fileMetadataService;
+    private final FileMetadataService fileMetadataService;
 
     @Transactional
     public EmployeeDto create(EmployeeCreateRequest request,
@@ -37,8 +38,7 @@ public class EmployeeService {
                               String ipAddress) {
         validateEmailNotDuplicated(request.email());
         Department department = findDepartment(request.departmentId());
-        FileMetadata profileImage = null; // 파일 담당 구현 완료 전까지는 프로필 이미지를 저장하지 않음
-//        FileMetadata profileImage = FileMetadata profileImage = saveProfileImageIfPresent(profile);
+        FileMetadata profileImage = saveProfileImageIfPresent(profile);
         String employeeNumber = generateEmployeeNumber(request.hireDate());
 
         Employee employee = employeeMapper.toEntity(
@@ -81,7 +81,7 @@ public class EmployeeService {
         FileMetadata newProfileImage = oldProfileImage;
 
         if (profile != null && !profile.isEmpty()) {
-//            newProfileImage = profileImageStorage.store(profile);
+            newProfileImage = saveProfileImageIfPresent(profile);
         }
 
         String name = request.name() == null ? employee.getName() : request.name();
@@ -93,7 +93,8 @@ public class EmployeeService {
         employee.update(name, email, department, position, hireDate, status, newProfileImage);
 
         if (profile != null && !profile.isEmpty() && oldProfileImage != null) {
-//            profileImageStorage.delete(oldProfileImage);
+            employeeRepository.flush();
+            fileMetadataService.delete(List.of(oldProfileImage));
         }
         changeLogService.logUpdated(before, employee, request.memo(), ipAddress);
 
@@ -110,7 +111,8 @@ public class EmployeeService {
         employeeRepository.delete(employee);
 
         if (profileImage != null) {
-//            profileImageStorage.delete(profileImage);
+            employeeRepository.flush();
+            fileMetadataService.delete(List.of(profileImage));
         }
 
         changeLogService.logDeleted(before, null, ipAddress);
@@ -215,8 +217,9 @@ public class EmployeeService {
         if (profile == null || profile.isEmpty()) {
             return null;
         }
-//        return profileImageStorage.store(profile);
-        return null;
+        FileMetadata profileImage = fileMetadataService.save(List.of(profile)).get(0);
+        profileImage.setFileType(FileTypeConst.PROFILE_IMAGE);
+        return profileImage;
     }
 
     private String generateEmployeeNumber(LocalDate hireDate) {
