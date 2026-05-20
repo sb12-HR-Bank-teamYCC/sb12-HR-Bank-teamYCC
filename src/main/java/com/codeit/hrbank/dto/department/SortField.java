@@ -16,4 +16,13 @@ public enum SortField {
   public String getValue() {
     return value;
   }
+
+  public static SortField from(String value) {
+    for (SortField field : SortField.values()) {
+      if (field.value.equalsIgnoreCase(value)) {
+        return field;
+      }
+    }
+    throw new IllegalArgumentException("Invalid sortField: " + value);
+  }
 }

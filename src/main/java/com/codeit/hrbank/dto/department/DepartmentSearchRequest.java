@@ -21,9 +21,16 @@ public class DepartmentSearchRequest {
   private int size = 10;
 
   @Builder.Default
-  private SortField sortField = SortField.ESTABLISHED_DATE;
+  private String sortField = "establishedDate";
 
   @Builder.Default
-  private SortDirection sortDirection = SortDirection.ASC;
+  private String sortDirection = "asc";
 
+  public SortField getSortFieldEnum() {
+    return SortField.from(sortField);
+  }
+
+  public SortDirection getSortDirectionEnum() {
+    return SortDirection.from(sortDirection);
+  }
 }

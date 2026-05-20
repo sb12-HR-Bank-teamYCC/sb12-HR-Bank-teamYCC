@@ -99,13 +99,13 @@ public class DepartmentService {
         .filter(d -> request.getIdAfter() == null
             || d.getId().compareTo(request.getIdAfter()) > 0)
         .sorted((d1, d2) -> {
-          if (request.getSortField() == SortField.NAME) {
-            return request.getSortDirection() == SortDirection.ASC
+          if (request.getSortFieldEnum() == SortField.NAME) {
+            return request.getSortDirectionEnum() == SortDirection.ASC
                 ? d1.getName().compareTo(d2.getName())
                 : d2.getName().compareTo(d1.getName());
           }
 
-          return request.getSortDirection() == SortDirection.ASC
+          return request.getSortDirectionEnum() == SortDirection.ASC
               ? d1.getEstablishedDate().compareTo(d2.getEstablishedDate())
               : d2.getEstablishedDate().compareTo(d1.getEstablishedDate());
         })
@@ -131,8 +131,8 @@ public class DepartmentService {
         .size(request.getSize())
         .totalElements(filtered.size())
         .hasNext(hasNext)
-        .sortField(request.getSortField().getValue())
-        .sortDirection(request.getSortDirection().getValue())
+        .sortField(request.getSortField())
+        .sortDirection(request.getSortDirection())
         .build();
   }
 
