@@ -90,16 +90,22 @@ public class ChangeLogService {
     public CursorPageResponse<ChangeLogDto> getChangeLogs(
             String employeeNumber, ChangeType type, String memo, String ipAddress,
             Instant atFrom, Instant atTo,
-            UUID idAfter, String cursor,
+            String idAfter, String cursor,
             int size, String sortField, String sortDirection
     ) {
         String normSortField = normalizeSortField(sortField);
         String normSortDir = "asc".equalsIgnoreCase(sortDirection) ? "asc" : "desc";
 
+        UUID parsedIdAfter = null;
+
+        if (idAfter != null && !idAfter.isBlank() && !"0".equals(idAfter)) {
+            parsedIdAfter = UUID.fromString(idAfter);
+        }
+
         List<ChangeLog> logs = changeLogRepository.findAllWithFilters(
                 employeeNumber, type, memo, ipAddress,
                 atFrom, atTo,
-                idAfter, cursor,
+                parsedIdAfter, cursor,
                 size + 1, normSortField, normSortDir
         );
 

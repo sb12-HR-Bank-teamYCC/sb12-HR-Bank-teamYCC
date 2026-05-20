@@ -25,16 +25,16 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID>, Emplo
     boolean existsByEmployeeNumber(String employeeNumber);
 
     @Query("""
-        SELECT COUNT(e)
-        FROM Employee e
-        WHERE (:status IS NULL OR e.status = :status)
-          AND (:fromDate IS NULL OR e.hireDate >= :fromDate)
-          AND (:toDate IS NULL OR e.hireDate <= :toDate)
-    """)
+    SELECT COUNT(e)
+    FROM Employee e
+    WHERE (:status IS NULL OR e.status = :status)
+      AND (CAST(:fromDate AS java.time.LocalDate) IS NULL OR e.hireDate >= :fromDate)
+      AND (CAST(:toDate AS java.time.LocalDate) IS NULL OR e.hireDate <= :toDate)
+""")
     long countEmployees(
-            @Param("status") EmployeeStatus status,
-            @Param("fromDate") LocalDate fromDate,
-            @Param("toDate") LocalDate toDate
+        @Param("status") EmployeeStatus status,
+        @Param("fromDate") LocalDate fromDate,
+        @Param("toDate") LocalDate toDate
     );
 
     @Query("""

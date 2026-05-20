@@ -29,7 +29,7 @@ public class ChangeLogController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant atFrom,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant atTo,
-            @RequestParam(required = false) UUID idAfter,
+            @RequestParam(required = false) String  idAfter,
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "at") String sortField,
