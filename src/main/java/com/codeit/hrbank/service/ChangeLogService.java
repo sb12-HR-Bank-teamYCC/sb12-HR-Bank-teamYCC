@@ -1,22 +1,30 @@
 package com.codeit.hrbank.service;
 
+import com.codeit.hrbank.common.exception.ErrorCode;
+import com.codeit.hrbank.dto.changeLog.ChangeLogDetailDto;
+import com.codeit.hrbank.dto.error.HrBankException;
 import com.codeit.hrbank.entity.FileMetadata;
 import com.codeit.hrbank.entity.changeLog.ChangeLog;
 import com.codeit.hrbank.entity.changeLog.ChangeType;
 import com.codeit.hrbank.entity.employee.Employee;
+import com.codeit.hrbank.mapper.ChangeLogMapper;
 import com.codeit.hrbank.repository.ChangeLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ChangeLogService {
 
     private final ChangeLogRepository changeLogRepository;
+    private final ChangeLogMapper changeLogMapper;
 
     @Transactional
     public ChangeLog logCreated(Employee employee, String memo, String ipAddress) {
@@ -73,6 +81,26 @@ public class ChangeLogService {
         changeLogRepository.save(log);
     }
 
+    @Transactional(readOnly = true)
+    public ChangeLogDetailDto findDetail(UUID id) {
+        ChangeLog changeLog = changeLogRepository.findWithDiffsById(id)
+                .orElseThrow(() -> new HrBankException(ErrorCode.CHANGE_LOG_NOT_FOUND));
+        return changeLogMapper.toDetailDto(changeLog);
+    }
+
+    @Transactional(readOnly = true)
+    public long countChangeLogs(Instant fromDate, Instant toDate) {
+        Instant effectiveToDate = toDate == null ? Instant.now() : toDate;
+        Instant effectiveFromDate = fromDate == null
+                ? effectiveToDate.minus(7, ChronoUnit.DAYS) : fromDate;
+
+        if (effectiveFromDate.isAfter(effectiveToDate)) {
+            throw new HrBankException(ErrorCode.INVALID_DATE_RANGE);
+        }
+
+        return changeLogRepository.countByAtBetween(effectiveFromDate, effectiveToDate);
+    }
+
     private ChangeLog buildLog(ChangeType type, Employee employee, String memo, String ipAddress
     ) {
         return ChangeLog.builder()
@@ -82,6 +110,7 @@ public class ChangeLogService {
             .employeeName(employee.getName())
             .memo(memo)
             .ipAddress(ipAddress)
+            .at(Instant.now())
             .build();
     }
 
@@ -95,6 +124,7 @@ public class ChangeLogService {
             .employeeName(snapshot.name())
             .memo(memo)
             .ipAddress(ipAddress)
+            .at(Instant.now())
             .build();
     }
 
