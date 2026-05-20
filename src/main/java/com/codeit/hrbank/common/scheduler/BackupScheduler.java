@@ -1,6 +1,6 @@
 package com.codeit.hrbank.common.scheduler;
 
-import com.codeit.hrbank.service.DataBackupService;
+import com.codeit.hrbank.service.dataBackup.DataBackupService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

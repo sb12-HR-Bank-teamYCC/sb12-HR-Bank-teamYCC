@@ -1,4 +1,4 @@
-package com.codeit.hrbank.service;
+package com.codeit.hrbank.service.dataBackup;
 
 import com.codeit.hrbank.common.config.FileConfig;
 import com.codeit.hrbank.common.exception.ErrorCode;
@@ -14,6 +14,7 @@ import com.codeit.hrbank.repository.ChangeLogRepository;
 import com.codeit.hrbank.repository.DataBackupRepository;
 import com.codeit.hrbank.repository.EmployeeRepository;
 import com.codeit.hrbank.repository.FileMetadataRepository;
+import com.codeit.hrbank.repository.querydsl.DataBackupQueryRepository;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -22,6 +23,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
@@ -39,32 +43,37 @@ public class DataBackupService {
 
   private static final int CHUNK_SIZE = 1000;
   private static final String CSV_HEADER = "id,name,email,employeeNumber,department,position,hireDate,status";
+  private static final DateTimeFormatter BACKUP_NAME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
   private final DataBackupRepository dataBackupRepository;
   private final ChangeLogRepository changeLogRepository;
   private final EmployeeRepository employeeRepository;
   private final FileMetadataRepository fileMetadataRepository;
+
   private final DataBackupMapper dataBackupMapper;
+  private final DataBackupTxService dataBackupTxService;
   private final FileConfig fileConfig;
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 데이터 백업 프로세스 (STEP 1 ~ 4)
   // ─────────────────────────────────────────────────────────────────────────────
-  @Transactional
   public DataBackupDto backup(String worker) {
 
     // STEP.1: 백업 필요 여부 판단
     if (!isBackupNeeded()) {
       log.info("[Backup] 변경 이력 없음 → SKIPPED 처리");
-      return dataBackupMapper.toDto(saveSkipped(worker));
+      DataBackup dataBackup = DataBackup.builder()
+          .worker(worker)
+          .startedAt(Instant.now())
+          .endedAt(Instant.now())
+          .status(BackupStatus.SKIPPED)
+          .build();
+
+      return dataBackupMapper.toDto(dataBackupRepository.save(dataBackup));
     }
 
     // STEP.2: IN_PROGRESS 이력 등록 (이 시점부터 API로 조회 가능)
-    DataBackup backup = dataBackupRepository.save(DataBackup.builder()
-        .worker(worker)
-        .startedAt(Instant.now())
-        .status(BackupStatus.IN_PROGRESS)
-        .build());
+    DataBackup backup = dataBackupTxService.createInProgressBackup(worker);
 
     log.info("[Backup] 백업 시작, id={}, worker={}", backup.getId(), worker);
 
@@ -156,25 +165,23 @@ public class DataBackupService {
    * 변경된 직원 데이터가 있으면 → true
    */
   private boolean isBackupNeeded() {
+
     return dataBackupRepository
         .findLatestByStatus(BackupStatus.COMPLETED)
         .map(last -> {
-          Instant lastEndedAt = last.getEndedAt();
-          if (lastEndedAt == null) {
-            return true; // 비정상 케이스: endedAt이 없으면 백업 필요
-          }
-          return changeLogRepository.existsByAtAfter(lastEndedAt);
-        })
-        .orElse(true); // 완료된 백업 이력 자체가 없으면 백업 필요
-  }
 
-  private DataBackup saveSkipped(String worker) {
-    return dataBackupRepository.save(DataBackup.builder()
-        .worker(worker)
-        .startedAt(Instant.now())
-        .endedAt(Instant.now())
-        .status(BackupStatus.SKIPPED)
-        .build());
+          Instant lastEndedAt = last.getEndedAt();
+
+          log.info("lastEndedAt={}", lastEndedAt);
+
+          boolean exists =
+              changeLogRepository.existsByAtAfter(lastEndedAt);
+
+          log.info("existsChangeLog={}", exists);
+
+          return exists;
+        })
+        .orElse(true);
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -277,11 +284,52 @@ public class DataBackupService {
   // ─────────────────────────────────────────────────────────────────────────────
 
   private Path buildCsvPath(UUID backupId) {
-    return fileConfig.getUploadDir().resolve("backup_" + backupId + ".csv");
+
+    Path dateDir = createBackupDirectory();
+
+    String timestamp =
+        LocalDateTime.now().format(BACKUP_NAME_FORMAT);
+
+    String fileName =
+        "backup_" + timestamp + "-" + backupId + ".csv";
+
+    return dateDir.resolve(fileName);
   }
 
   private Path buildLogPath(UUID backupId) {
-    return fileConfig.getUploadDir().resolve("backup_" + backupId + "_error.log");
+
+    Path dateDir = createBackupDirectory();
+
+    String timestamp =
+        LocalDateTime.now().format(BACKUP_NAME_FORMAT);
+
+    String fileName =
+        "backup_" + timestamp + "-" + backupId + ".log";
+
+    return dateDir.resolve(fileName);
+  }
+
+  private Path createBackupDirectory() {
+
+    String date =
+        LocalDate.now().format(
+            DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        );
+
+    Path dateDir =
+        fileConfig.getBackupDir().resolve(date);
+
+    try {
+      Files.createDirectories(dateDir);
+    } catch (IOException e) {
+      throw new RuntimeException(
+          "디렉토리 생성 실패: "
+              + dateDir.toAbsolutePath(),
+          e
+      );
+    }
+
+    return dateDir;
   }
 
   private void deleteQuietly(Path path) {

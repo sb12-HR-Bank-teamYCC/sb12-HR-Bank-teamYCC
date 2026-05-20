@@ -2,7 +2,7 @@ package com.codeit.hrbank.controller;
 
 import com.codeit.hrbank.dto.dataBackup.DataBackupDto;
 import com.codeit.hrbank.dto.page.CursorPageResponse;
-import com.codeit.hrbank.service.DataBackupService;
+import com.codeit.hrbank.service.dataBackup.DataBackupService;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;

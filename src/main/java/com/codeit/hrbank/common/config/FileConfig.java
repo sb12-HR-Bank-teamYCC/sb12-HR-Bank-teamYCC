@@ -13,16 +13,28 @@ import org.springframework.context.annotation.Configuration;
 public class FileConfig {
 
     private Path uploadDir;
+    private Path backupDir;
 
     @PostConstruct
     public void init() {
-        uploadDir = Paths.get(System.getProperty("user.dir"), "uploads");
-        if (Files.notExists(uploadDir)) {
+        uploadDir = createDirectory("uploads");
+        backupDir = createDirectory("uploads/backups");
+    }
+
+    private Path createDirectory(String path) {
+        Path dir = Paths.get(System.getProperty("user.dir"), path);
+
+        if (Files.notExists(dir)) {
             try {
-                Files.createDirectories(uploadDir);
+                Files.createDirectories(dir);
             } catch (IOException e) {
-                throw new RuntimeException("업로드 디렉토리 생성 실패: " + uploadDir.toAbsolutePath(), e);
+                throw new RuntimeException(
+                    "디렉토리 생성 실패: " + dir.toAbsolutePath(),
+                    e
+                );
             }
         }
+
+        return dir;
     }
 }
