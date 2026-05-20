@@ -4,6 +4,7 @@ import com.codeit.hrbank.entity.employee.Employee;
 import com.codeit.hrbank.entity.employee.EmployeeStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -143,10 +144,15 @@ public class EmployeeRepositoryCustomImpl implements EmployeeRepositoryCustom {
   }
 
   private Object parseCursorValue(String cursorValue, String sortField) {
-    String decoded = new String(Base64.getDecoder().decode(cursorValue), java.nio.charset.StandardCharsets.UTF_8);
+    String decoded = new String(Base64.getDecoder().decode(cursorValue), StandardCharsets.UTF_8);
+
+    // ✅ "|uuid" 부분 제거
+    int pipeIndex = decoded.lastIndexOf('|');
+    String sortValue = pipeIndex >= 0 ? decoded.substring(0, pipeIndex) : decoded;
+
     if ("hireDate".equalsIgnoreCase(sortField)) {
-      return LocalDate.parse(decoded);
+      return LocalDate.parse(sortValue); // "2024-06-20" 만 파싱
     }
-    return decoded; // name, employeeNumber
+    return sortValue; // name, employeeNumber
   }
 }

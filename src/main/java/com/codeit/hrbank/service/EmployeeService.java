@@ -11,6 +11,7 @@ import com.codeit.hrbank.entity.employee.EmployeeStatus;
 import com.codeit.hrbank.mapper.EmployeeMapper;
 import com.codeit.hrbank.repository.DepartmentRepository;
 import com.codeit.hrbank.repository.EmployeeRepository;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -208,6 +209,10 @@ public class EmployeeService {
         String normalizedSortField = normalizeSortField(sortField);
         String normalizedSortDir   = normalizeSortDirection(sortDirection);
 
+        if (idAfter == null && cursor != null) {
+            idAfter = extractIdFromCursor(cursor);
+        }
+
         List<Employee> employees = employeeRepository.findAllWithFilters(
             nameOrEmail, employeeNumber, departmentName, position,
             hireDateFrom, hireDateTo, status,
@@ -237,6 +242,20 @@ public class EmployeeService {
             .toList();
 
         return new CursorPageResponse<>(content, nextCursor, nextIdAfter, size, totalElements, hasNext);
+    }
+
+    private UUID extractIdFromCursor(String cursor) {
+        try {
+            String decoded = new String(Base64.getDecoder().decode(cursor));
+            // "sortValue|uuid" 형태에서 uuid 파싱
+            String[] parts = decoded.split("\\|");
+            if (parts.length >= 2) {
+                return UUID.fromString(parts[parts.length - 1]);
+            }
+        } catch (Exception e) {
+            // 파싱 실패 시 null 반환 (첫 페이지처럼 동작)
+        }
+        return null;
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -369,12 +388,14 @@ public class EmployeeService {
     }
 
     private String encodeCursor(Employee employee, String sortField) {
-        String raw = switch (sortField) {
+        String sortValue = switch (sortField) {
             case "employeeNumber" -> employee.getEmployeeNumber();
             case "hireDate"       -> employee.getHireDate().toString();
             default               -> employee.getName();
         };
-        return Base64.getEncoder().encodeToString(raw.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        // ✅ "sortValue|uuid" 형태로 ID 포함
+        String raw = sortValue + "|" + employee.getId().toString();
+        return Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
     }
 
     private String normalizeSortField(String sortField) {
