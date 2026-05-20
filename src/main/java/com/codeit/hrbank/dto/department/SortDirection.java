@@ -16,4 +16,13 @@ public enum SortDirection {
   public String getValue() {
     return value;
   }
+
+  public static SortDirection from(String value) {
+    for (SortDirection dir : SortDirection.values()) {
+      if (dir.value.equalsIgnoreCase(value)) {
+        return dir;
+      }
+    }
+    throw new IllegalArgumentException("Invalid sortDirection: " + value);
+  }
 }
