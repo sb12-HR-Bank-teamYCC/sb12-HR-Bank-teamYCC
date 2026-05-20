@@ -1,7 +1,5 @@
 package com.codeit.hrbank.dto.employee;
 
-import com.codeit.hrbank.entity.FileMetadata;
-import com.codeit.hrbank.entity.employee.Employee;
 import com.codeit.hrbank.entity.employee.EmployeeStatus;
 
 import java.time.LocalDate;
