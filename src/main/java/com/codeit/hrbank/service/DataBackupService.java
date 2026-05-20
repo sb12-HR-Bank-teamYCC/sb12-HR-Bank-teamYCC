@@ -1,7 +1,9 @@
 package com.codeit.hrbank.service;
 
 import com.codeit.hrbank.common.config.FileConfig;
+import com.codeit.hrbank.common.exception.ErrorCode;
 import com.codeit.hrbank.dto.dataBackup.DataBackupDto;
+import com.codeit.hrbank.dto.error.HrBankException;
 import com.codeit.hrbank.dto.page.CursorPageResponse;
 import com.codeit.hrbank.entity.FileMetadata;
 import com.codeit.hrbank.entity.backupStatus.BackupStatus;
@@ -27,7 +29,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,7 +60,12 @@ public class DataBackupService {
     }
 
     // STEP.2: IN_PROGRESS 이력 등록 (이 시점부터 API로 조회 가능)
-    DataBackup backup = saveInProgress(worker);
+    DataBackup backup = dataBackupRepository.save(DataBackup.builder()
+        .worker(worker)
+        .startedAt(Instant.now())
+        .status(BackupStatus.IN_PROGRESS)
+        .build());
+
     log.info("[Backup] 백업 시작, id={}, worker={}", backup.getId(), worker);
 
     Path tempCsvPath = null;
@@ -146,10 +152,8 @@ public class DataBackupService {
   // ─────────────────────────────────────────────────────────────────────────────
 
   /**
-   * STEP.1: 백업 필요 여부 판단
-   * - 완료된 백업이 없으면 → true (최초 실행)
-   * - endedAt이 null이면 → true (비정상 완료)
-   * - 마지막 완료 이후 변경된 직원 데이터가 있으면 → true
+   * STEP.1: 백업 필요 여부 판단 - 완료된 백업이 없으면 → true (최초 실행) - endedAt이 null이면 → true (비정상 완료) - 마지막 완료 이후
+   * 변경된 직원 데이터가 있으면 → true
    */
   private boolean isBackupNeeded() {
     return dataBackupRepository
@@ -173,21 +177,12 @@ public class DataBackupService {
         .build());
   }
 
-  private DataBackup saveInProgress(String worker) {
-    return dataBackupRepository.save(DataBackup.builder()
-        .worker(worker)
-        .startedAt(Instant.now())
-        .status(BackupStatus.IN_PROGRESS)
-        .build());
-  }
-
   // ─────────────────────────────────────────────────────────────────────────────
   // Private: CSV 백업 파일 생성 (STEP.3)
   // ─────────────────────────────────────────────────────────────────────────────
 
   /**
-   * 전체 직원을 CHUNK_SIZE(1000)건씩 읽어 CSV로 기록합니다.
-   * 한 번에 전체 로드 시 OOM 위험이 있으므로 페이징 방식으로 처리합니다.
+   * 전체 직원을 CHUNK_SIZE(1000)건씩 읽어 CSV로 기록합니다. 한 번에 전체 로드 시 OOM 위험이 있으므로 페이징 방식으로 처리합니다.
    */
   private void writeCsvInChunks(Path csvPath) throws IOException {
     try (BufferedWriter writer = Files.newBufferedWriter(csvPath, StandardCharsets.UTF_8)) {
@@ -211,8 +206,7 @@ public class DataBackupService {
   }
 
   /**
-   * Employee → CSV 한 줄 변환.
-   * 필드 내 콤마/큰따옴표는 RFC 4180에 따라 큰따옴표로 감쌉니다.
+   * Employee → CSV 한 줄 변환. 필드 내 콤마/큰따옴표는 RFC 4180에 따라 큰따옴표로 감쌉니다.
    */
   private String toCsvRow(Employee e) {
     return String.join(",",
@@ -228,7 +222,9 @@ public class DataBackupService {
   }
 
   private String csvEscape(String value) {
-    if (value == null) return "";
+    if (value == null) {
+      return "";
+    }
     if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
       return "\"" + value.replace("\"", "\"\"") + "\"";
     }
@@ -289,7 +285,9 @@ public class DataBackupService {
   }
 
   private void deleteQuietly(Path path) {
-    if (path == null) return;
+    if (path == null) {
+      return;
+    }
     try {
       Files.deleteIfExists(path);
     } catch (IOException e) {
@@ -304,20 +302,22 @@ public class DataBackupService {
   private String encodeCursor(DataBackup backup, String sortField) {
     String field = (sortField == null || sortField.isBlank()) ? "startedAt" : sortField;
     String sortValue = switch (field) {
-      case "endedAt" -> backup.getEndedAt()   != null ? backup.getEndedAt().toString()   : "";
-      case "status"  -> backup.getStatus()    != null ? backup.getStatus().name()         : "";
-      default        -> backup.getStartedAt() != null ? backup.getStartedAt().toString() : "";
+      case "endedAt" -> backup.getEndedAt() != null ? backup.getEndedAt().toString() : "";
+      case "status" -> backup.getStatus() != null ? backup.getStatus().name() : "";
+      default -> backup.getStartedAt() != null ? backup.getStartedAt().toString() : "";
     };
     return Base64.getUrlEncoder().withoutPadding()
         .encodeToString((sortValue + ":" + backup.getId()).getBytes());
   }
 
   private BackupStatus parseStatus(String status) {
-    if (status == null || status.isBlank()) return null;
+    if (status == null || status.isBlank()) {
+      return null;
+    }
     try {
       return BackupStatus.valueOf(status.toUpperCase());
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("지원하지 않는 상태값입니다: " + status);
+    } catch (HrBankException e) {
+      throw new HrBankException(ErrorCode.INVALID_STATUS);
     }
   }
 }
