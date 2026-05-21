@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew compileJava --rerun-tasks)",
+      "Bash(./gradlew clean *)"
+    ]
+  }
+}

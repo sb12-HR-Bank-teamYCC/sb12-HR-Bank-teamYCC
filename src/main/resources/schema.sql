@@ -1,5 +1,6 @@
 GRANT ALL ON SCHEMA public TO hr_user;
 
+
 -- files 테이블 생성
 CREATE TABLE files (
     id UUID PRIMARY KEY,

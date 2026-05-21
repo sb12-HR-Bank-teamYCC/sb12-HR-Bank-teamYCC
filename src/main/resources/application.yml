@@ -2,9 +2,8 @@
   application:
     name: hr_bank
 
-# Railway에서 쓸 환경변수
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev} 
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
   servlet:
     multipart:
@@ -14,7 +13,6 @@
   mvc:
     log-request-details: true
 
-# Swagger
 springdoc:
   api-docs:
     enabled: true
@@ -26,7 +24,6 @@ springdoc:
     display-request-duration: true
     persist-authorization: true
 
-# Logging
 logging:
   level:
     org.hibernate.SQL: off
@@ -44,3 +41,8 @@ hr-bank:
     type: local
     local:
       root-path: /data/storage
+  backup:
+    ## 테스트 10초마다
+    ## schedule-cron: "*/10 * * * * *"
+    ## 테스트 1시간 마다
+    schedule-cron: "0 0 * * * *"

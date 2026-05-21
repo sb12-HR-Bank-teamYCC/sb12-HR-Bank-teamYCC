@@ -15,7 +15,11 @@ import org.springframework.data.annotation.LastModifiedDate;
 @Getter
 public class BaseUpdatableEntity extends BaseEntity {
 
+  @LastModifiedDate
+  @Column(name = "updated_at", nullable = false)
   protected Instant updatedAt;
 
+  @CreatedDate
+  @Column(name = "created_at", updatable = false, nullable = false)
   protected Instant createdAt;
 }
