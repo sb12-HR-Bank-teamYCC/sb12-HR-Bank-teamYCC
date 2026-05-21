@@ -5,6 +5,8 @@ import com.codeit.hrbank.dto.department.DepartmentResponse;
 import com.codeit.hrbank.dto.department.DepartmentSearchRequest;
 import com.codeit.hrbank.dto.department.DepartmentSliceResponse;
 import com.codeit.hrbank.dto.department.DepartmentUpdateRequest;
+import com.codeit.hrbank.dto.employee.EmployeeDto;
+import com.codeit.hrbank.dto.page.CursorPageResponse;
 import com.codeit.hrbank.service.DepartmentService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -60,9 +62,8 @@ public class DepartmentController {
 
   // 부서 목록 조회 (검색, 정렬, 커서 기반 페이지네이션)
   @GetMapping
-  public ResponseEntity<DepartmentSliceResponse> getDepartments(
+  public CursorPageResponse<DepartmentResponse> getDepartments(
       @ModelAttribute DepartmentSearchRequest request) {
-    DepartmentSliceResponse response = departmentService.getDepartments(request);
-    return ResponseEntity.ok(response);
+    return departmentService.getDepartments(request);
   }
 }

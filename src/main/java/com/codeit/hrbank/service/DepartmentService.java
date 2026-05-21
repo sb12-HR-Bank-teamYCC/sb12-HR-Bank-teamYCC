@@ -8,7 +8,9 @@ import com.codeit.hrbank.dto.department.DepartmentSliceResponse;
 import com.codeit.hrbank.dto.department.DepartmentUpdateRequest;
 import com.codeit.hrbank.dto.department.SortDirection;
 import com.codeit.hrbank.dto.department.SortField;
+import com.codeit.hrbank.dto.employee.EmployeeDto;
 import com.codeit.hrbank.dto.error.HrBankException;
+import com.codeit.hrbank.dto.page.CursorPageResponse;
 import com.codeit.hrbank.entity.Department;
 import com.codeit.hrbank.repository.DepartmentRepository;
 import java.util.List;
@@ -83,58 +85,66 @@ public class DepartmentService {
 
   // 부서 목록 조회 (검색, 정렬, 커서 기반 페이지네이션)
   @Transactional(readOnly = true)
-  public DepartmentSliceResponse getDepartments(DepartmentSearchRequest request) {
+  public CursorPageResponse<DepartmentResponse> getDepartments(DepartmentSearchRequest request) {
 
     String keyword = request.getNameOrDescription();
 
     List<Department> departments;
-
     if (keyword == null || keyword.isBlank()) {
       departments = departmentRepository.findAll();
     } else {
       departments = departmentRepository.searchDepartments(keyword);
     }
 
-    List<Department> filtered = departments.stream()
-        .filter(d -> request.getIdAfter() == null
-            || d.getId().compareTo(request.getIdAfter()) > 0)
+    // 1. 먼저 정렬
+    List<Department> sorted = departments.stream()
         .sorted((d1, d2) -> {
           if (request.getSortFieldEnum() == SortField.NAME) {
             return request.getSortDirectionEnum() == SortDirection.ASC
                 ? d1.getName().compareTo(d2.getName())
                 : d2.getName().compareTo(d1.getName());
           }
-
           return request.getSortDirectionEnum() == SortDirection.ASC
               ? d1.getEstablishedDate().compareTo(d2.getEstablishedDate())
               : d2.getEstablishedDate().compareTo(d1.getEstablishedDate());
         })
         .collect(Collectors.toList());
 
-    boolean hasNext = filtered.size() > request.getSize();
+    // 2. idAfter 위치 기준으로 커서 적용
+    int startIndex = 0;
+    if (request.getIdAfter() != null) {
+      for (int i = 0; i < sorted.size(); i++) {
+        if (sorted.get(i).getId().equals(request.getIdAfter())) {
+          startIndex = i + 1;
+          break;
+        }
+      }
+    }
 
-    List<Department> paged = filtered.stream()
+    List<Department> afterCursor = sorted.subList(startIndex, sorted.size());
+
+    boolean hasNext = afterCursor.size() > request.getSize();
+
+    List<DepartmentResponse> paged = afterCursor.stream()
         .limit(request.getSize())
+        .map(d -> toResponse(d,
+            (int) departmentRepository.countEmployeesByDepartmentId(d.getId())))
         .collect(Collectors.toList());
 
-    UUID nextCursor = paged.isEmpty()
+    String nextCursor = paged.isEmpty()
         ? null
-        : paged.get(paged.size() - 1).getId();
+        : paged.get(paged.size() - 1).getId().toString();
 
-    return DepartmentSliceResponse.builder()
-        .content(paged.stream()
-            .map(d -> toResponse(d,
-                (int) departmentRepository.countEmployeesByDepartmentId(d.getId())))
-            .collect(Collectors.toList()))
-        .nextCursor(nextCursor != null ? nextCursor.toString() : null)
-        .nextIdAfter(nextCursor)
-        .size(request.getSize())
-        .totalElements(filtered.size())
-        .hasNext(hasNext)
-        .sortField(request.getSortField())
-        .sortDirection(request.getSortDirection())
-        .build();
+    return new CursorPageResponse<>(
+        paged,
+        nextCursor,
+        nextCursor,
+        request.getSize(),
+        sorted.size(),   // totalElements는 전체 기준
+        hasNext
+    );
   }
+
 
   private DepartmentResponse toResponse(Department department, int employeeCount) {
     return new DepartmentResponse(
