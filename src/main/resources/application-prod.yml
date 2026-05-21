@@ -1,7 +1,7 @@
 spring:
   sql:
     init:
-      mode: never
+      mode: always
   config:
     activate:
       on-profile: prod
@@ -15,7 +15,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
 
     show-sql: false
 
