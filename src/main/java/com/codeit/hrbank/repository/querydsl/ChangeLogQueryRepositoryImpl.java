@@ -98,7 +98,7 @@ public class ChangeLogQueryRepositoryImpl implements ChangeLogQueryRepository {
         if (employeeNumber != null && !employeeNumber.isBlank()) {
             where.and(cl.employeeNumber.containsIgnoreCase(employeeNumber));
         }
-        if (type != null) {
+        if (type != null && type != ChangeType.ALL) {
             where.and(cl.type.eq(type));
         }
         if (memo != null && !memo.isBlank()) {

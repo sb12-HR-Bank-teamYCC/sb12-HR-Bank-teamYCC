@@ -99,7 +99,7 @@ public class ChangeLogService {
         UUID parsedIdAfter = null;
 
         if (idAfter != null && !idAfter.isBlank() && !"0".equals(idAfter)) {
-            parsedIdAfter = UUID.fromString(idAfter);
+            parsedIdAfter = UUID.fromString(idAfter); // "0"이 아닌 비-UUID 문자열 오면 예외
         }
 
         List<ChangeLog> logs = changeLogRepository.findAllWithFilters(
@@ -120,7 +120,7 @@ public class ChangeLogService {
 
         String nextCursor = null;
         String nextIdAfter = null;
-        if (!logs.isEmpty()) {
+        if (hasNext && !logs.isEmpty()) {
             ChangeLog last = logs.get(logs.size() - 1);
             nextCursor = encodeCursor(last, normSortField);
             nextIdAfter = last.getId().toString();
