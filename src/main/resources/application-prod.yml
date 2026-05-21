@@ -1,7 +1,10 @@
 spring:
   sql:
     init:
-      mode: never
+      mode: ${SPRING_SQL_INIT_MODE:always}
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:bigData.sql
+
   config:
     activate:
       on-profile: prod
@@ -14,6 +17,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+
+    defer-datasource-initialization: true
 
     show-sql: false
 
