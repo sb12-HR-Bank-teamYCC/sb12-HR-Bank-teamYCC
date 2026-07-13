@@ -13,7 +13,7 @@
 
 | 이름 | 역할 |
 |------|------|
-| [장현우](https://github.com/gusdn6763) | 프로젝트 총괄·기술 리드, 공통 모듈 개발, 데이터 백업·스케줄링, 페이지네이션, PR 리뷰 및 병합, 배포 |
+| [장현우](https://github.com/gusdn6763) | 팀장, 프로젝트 총괄·기술 리드, 공통 모듈 개발, 데이터 백업·스케줄링, 페이지네이션, PR 리뷰 및 병합, 배포 |
 | [김수아](https://github.com/suaripa) | 포트폴리오 제작, 발표 자료 관리, 팀 일정·커뮤니케이션 관리 |
 | [석지예](https://github.com/zziyo8) | 기능 명세서 및 API 명세서, 부서 Entity·DTO·Mapper·Repository·Service·Controller |
 | [송유정](https://github.com/Yoojungee) | 파일 Entity·Repository·Service·Controller, 파일 업로드·다운로드, FileStorage·FileConfig |
