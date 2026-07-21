@@ -219,3 +219,8 @@ src
 ## 배포
 
 [🔗 서비스 바로가기](https://sb12-hr-bank-teamycc-production.up.railway.app/#/histories)
+
+## 📝 프로젝트 자료
+[🔗 HR-Bank - 프로젝트 자료](https://docs.google.com/presentation/d/1z2PQZ6nrCDzMjCcXwmKiKgMbu4pqrhPk/edit?usp=drive_link&ouid=113139183763918939492&rtpof=true&sd=true)  
+[📄 HR-Bank - API 명세](https://app.notion.com/p/36033f6c8da080c791d1f1efbde50fcc)  
+[🗺️ HR-Bank - ERD](https://www.erdcloud.com/d/JocyyG2585yq8nbwH)
