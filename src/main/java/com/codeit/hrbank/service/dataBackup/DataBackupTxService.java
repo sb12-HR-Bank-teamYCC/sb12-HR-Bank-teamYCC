@@ -15,7 +15,7 @@ public class DataBackupTxService {
 
   private final DataBackupRepository dataBackupRepository;
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional
   public DataBackup createInProgressBackup(String worker) {
     return dataBackupRepository.save(
         DataBackup.builder()
